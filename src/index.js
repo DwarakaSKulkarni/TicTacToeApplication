@@ -1,14 +1,38 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css';
 
 function Square(props) {
+
   return (
     <button className="square" onClick={props.onClick}>
       {props.value}
     </button>
   );
 }
+
+const getSymbol = async () => {
+    const response = await fetch('http://localhost:3000/currentMove');
+    const data = await response.json();
+    console.log(data);
+};
+
+// Post method
+const postSymbol = async (history) => {
+   await fetch('http://localhost:3000/move', {
+      method: 'POST',
+      body: JSON.stringify({
+         history: history
+      }),
+      headers: {
+         'Content-type': 'application/json; charset=UTF-8',
+      },
+   })
+      .then((response) => response.json())
+      .catch((err) => {
+         console.log('postSymbol', err.message);
+      });
+};
 
 class Board extends React.Component {
   renderSquare(i) {
@@ -74,7 +98,13 @@ class Game extends React.Component {
       stepNumber: history.length,
       xIsNext: !this.state.xIsNext
     });
+
+    postSymbol(history);
+    getSymbol();
+
   }
+
+
 
   jumpTo(step) {
     this.setState({
