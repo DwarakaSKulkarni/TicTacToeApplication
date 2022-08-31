@@ -10,49 +10,50 @@ function Square(props) {
     </button>
   );
 }
-
+// get API implementation
 const getSymbol = async () => {
     const response = await fetch('http://localhost:3000/currentMove');
     const data = await response.json();
-    console.log(data);
-};
-
-// Post method
-const postSymbol = async (history) => {
-   await fetch('http://localhost:3000/move', {
-      method: 'POST',
-      body: JSON.stringify({
-         history: history
-      }),
-      headers: {
-         'Content-type': 'application/json; charset=UTF-8',
-      },
-   })
-      .then((response) => response.json())
-      .catch((err) => {
-         console.log('postSymbol', err.message);
-      });
+    console.log('getSymbol: ', data);
 };
 
 class Board extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      squares: Array(9).fill(null),
+      squares: {},
       xIsNext: true,
     };
   }
 
   handleClick(i) {
-    const squares = this.state.squares.slice();
+    const squares = this.state.squares;
     if (calculateWinner(squares) || squares[i]) {
       return;
     }
     squares[i] = this.state.xIsNext ? 'X' : 'O';
     this.setState({
-      squares: squares,
       xIsNext: !this.state.xIsNext,
     });
+    //Post Api implementation
+    const userId = new URLSearchParams(window.location.search).get('userId');
+    const gameId = new URLSearchParams(window.location.search).get('gameId');
+    fetch('http://localhost:3000/move', {
+        method: 'POST',
+        body: JSON.stringify({
+          state: squares,
+          userId: userId,
+          gameId: gameId,
+        }),
+        headers: {
+          'Content-type': 'application/json; charset=UTF-8',
+        },
+    })
+        .then(response => response.json())
+        .then(data => {this.setState({squares: data['state']})})
+        .catch(err => {
+          console.log('postSymbol', err.message);
+        });
   }
 
   renderSquare(i) {
@@ -64,7 +65,9 @@ class Board extends React.Component {
     );
   }
 
+
   render() {
+    console.log('render: ', JSON.stringify({state: this.state.squares}));
     const winner = calculateWinner(this.state.squares);
     let status;
     if (winner) {
@@ -101,11 +104,10 @@ class Game extends React.Component {
     return (
       <div className="game">
         <div className="game-board">
-          <Board />
+            <Board />
         </div>
         <div className="game-info">
           <div>{/* status */}</div>
-          <ol>{/* TODO */}</ol>
         </div>
       </div>
     );

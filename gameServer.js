@@ -10,20 +10,19 @@ app.use(bodyParser.urlencoded({ extended:false}));
 app.use(bodyParser.json());
 app.set('port', (process.env.PORT || 3000));
 
-let history=[];
 
 app.post('/move', (req, res) => {
     const move = req.body;
 
-    console.log(move.history);
-    history.push(move.history);
+    console.log(move);
 
-    res.send('{}');
+    res.send(move);
 });
 
-app.listen(app.get('port'), () => console.log('Hello world app listening at ' + app.get('port')));
+app.listen(app.get('port'), () => console.log('REST api listening at ' + app.get('port')));
 
 
 app.get('/currentMove', (req, res) => {
-    res.json(history);
+    const state = {"state": {"4":"X"} };
+    res.json(state);
 });
