@@ -1,6 +1,8 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
+const MongoClient = require('mongodb').MongoClient
+
 
 const app = express();
 //const port = 3000;
@@ -20,6 +22,17 @@ app.post('/move', (req, res) => {
 });
 
 app.listen(app.get('port'), () => console.log('REST api listening at ' + app.get('port')));
+
+MongoClient.connect('mongodb://localhost:27017/animals', (err, db) => {
+  console.log("MongoDB Connected");
+  if (err) throw err
+
+  /*db.collection('mammals').find().toArray((err, result) => {
+    if (err) throw err
+
+    console.log(result)
+  })*/
+})
 
 
 app.get('/currentMove', (req, res) => {
