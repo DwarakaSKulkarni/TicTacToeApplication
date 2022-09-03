@@ -12,7 +12,7 @@ function Square(props) {
 }
 // get API implementation
 const getSymbol = async () => {
-    const response = await fetch('http://localhost:3000/currentMove');
+    const response = await fetch('http://localhost:3000/state?gameID=124&userID=109')
     const data = await response.json();
     console.log('getSymbol: ', data);
 };
@@ -36,7 +36,7 @@ class Board extends React.Component {
       xIsNext: !this.state.xIsNext,
     });
     //Post Api implementation
-    const userId = new URLSearchParams(window.location.search).get('userId');
+    /*const userId = new URLSearchParams(window.location.search).get('userId');
     const gameId = new URLSearchParams(window.location.search).get('gameId');
     fetch('http://localhost:3000/move', {
         method: 'POST',
@@ -53,7 +53,8 @@ class Board extends React.Component {
         .then(data => {this.setState({squares: data['state']})})
         .catch(err => {
           console.log('postSymbol', err.message);
-        });
+        }); */
+        getSymbol();
   }
 
   renderSquare(i) {
@@ -67,7 +68,7 @@ class Board extends React.Component {
 
 
   render() {
-    console.log('render: ', JSON.stringify({state: this.state.squares}));
+   // console.log('render: ', JSON.stringify({state: this.state.squares}));
     const winner = calculateWinner(this.state.squares);
     let status;
     if (winner) {
