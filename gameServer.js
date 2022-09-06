@@ -4,6 +4,7 @@ const cors = require('cors');
 const MongoClient = require('mongodb').MongoClient
 const url = require('url');
 const querystring = require('querystring');
+const websockets = require('./websockets');
 
 
 const app = express();
@@ -14,16 +15,15 @@ app.use(bodyParser.json());
 app.set('port', (process.env.PORT || 3000));
 
 
-/*app.post('/move', (req, res) => {
-    const move = req.body;
+  const server = app.listen(app.get('port'), (err) => {
+   if (err) console.error('Unable to connect the server: ', err);
+   console.log('REST api listening at ' + app.get('port'))
+   });
 
-    console.log(move);
+    websockets(server);
 
-    res.send(move);
-});
-*/
+//Post API
 app.post('/move', (req, res) => {
-   // const move = req.body;
     var state =null;
     let gameId = req.body.gameId;
     let userId = req.body.userId;
@@ -63,22 +63,7 @@ app.post('/move', (req, res) => {
     });
 });
 
-app.listen(app.get('port'), () => console.log('REST api listening at ' + app.get('port')));
-
-
-//Mongo DB Connection and query
-
-/*MongoClient.connect('mongodb://localhost:27017', function(err, client){
-  if(err) throw err;
-  let db = client.db('gamedb');
-  db.collection('user').find().toArray(function(err, result){
-    if(err) throw err;
-    console.log(result);
-    client.close();
-    });
- });*/
-
-
+//Get API
 app.get('/state', (req, res) => {
   var state =null;
   let gameId = req.query.gameId;
