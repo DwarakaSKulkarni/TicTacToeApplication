@@ -10,51 +10,64 @@ function Square(props) {
     </button>
   );
 }
-// get API implementation
-const getSymbol = async () => {
-    const response = await fetch('http://localhost:3000/state?gameID=124&userID=109')
-    const data = await response.json();
-    console.log('getSymbol: ', data);
-};
 
 class Board extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
+      mySymbol:null,
       squares: {},
-      xIsNext: true,
+      nextTurn: null,
     };
   }
 
+  componentDidMount() {
+    const userId = new URLSearchParams(window.location.search).get('userId');
+    const gameId = new URLSearchParams(window.location.search).get('gameId');
+    const url = 'http://localhost:3000/state?gameId='+gameId+'&userId='+userId;
+    console.log("Get query--",url);
+    fetch(url)
+      .then(response => response.json())
+      .then(data => {
+        let mySymbol = data['playerOneId'] === userId ? 'X' : 'O';
+        this.setState({mySymbol: mySymbol,squares: data['state'], nextTurn: data['nextTurn']});
+        console.log("componentDidMount data: ", data);
+        console.log("componentDidMount nextTurn: ", data['nextTurn']);
+      })
+      .catch(err => {
+        console.log('getSymbol', err.message);
+      });
+  }
+
   handleClick(i) {
+   const userId = new URLSearchParams(window.location.search).get('userId');
+   const gameId = new URLSearchParams(window.location.search).get('gameId');
+   if(this.state.nextTurn!==this.state.mySymbol){
+      console.log("Wrong move");
+      return;
+   }
     const squares = this.state.squares;
     if (calculateWinner(squares) || squares[i]) {
       return;
     }
-    squares[i] = this.state.xIsNext ? 'X' : 'O';
-    this.setState({
-      xIsNext: !this.state.xIsNext,
-    });
     //Post Api implementation
-    /*const userId = new URLSearchParams(window.location.search).get('userId');
-    const gameId = new URLSearchParams(window.location.search).get('gameId');
+
     fetch('http://localhost:3000/move', {
         method: 'POST',
         body: JSON.stringify({
-          state: squares,
-          userId: userId,
           gameId: gameId,
+          userId: userId,
+          cellIndex: i,
         }),
         headers: {
           'Content-type': 'application/json; charset=UTF-8',
         },
     })
         .then(response => response.json())
-        .then(data => {this.setState({squares: data['state']})})
+        .then(data => {this.setState({squares: data['state'], nextTurn: data['nextTurn']})})
         .catch(err => {
           console.log('postSymbol', err.message);
-        }); */
-        getSymbol();
+        });
   }
 
   renderSquare(i) {
@@ -74,12 +87,14 @@ class Board extends React.Component {
     if (winner) {
       status = 'Winner: ' + winner;
     } else {
-      status = 'Next player: ' + (this.state.xIsNext ? 'X' : 'O');
+      status = 'Next player: ' + (this.state.nextTurn);
     }
+    let mySymbolStatus = 'Your symbol: ' + this.state.mySymbol;
 
     return (
       <div>
         <div className="status">{status}</div>
+        <div className="status">{mySymbolStatus}</div>
         <div className="board-row">
           {this.renderSquare(0)}
           {this.renderSquare(1)}
@@ -102,6 +117,7 @@ class Board extends React.Component {
 
 class Game extends React.Component {
   render() {
+    console.log("render: ", this.state);
     return (
       <div className="game">
         <div className="game-board">
